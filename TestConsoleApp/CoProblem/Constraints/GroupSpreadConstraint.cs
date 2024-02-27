@@ -1,26 +1,27 @@
-﻿namespace TestConsoleApp.Constraints;
+﻿namespace TestConsoleApp.CoProblem.Constraints;
 
 using Google.OrTools.Sat;
 using MdkConstraintProgrammingLibrary;
+using TestConsoleApp.CoProblem;
 
 /// <summary>Pupils are spread by group.</summary>
-internal class GroupSpreadConstraint : MdkCpConstraint<CoInput, CoVariables>
+internal sealed class GroupSpreadConstraint : MdkCpConstraint<CoInput, CoVariables>
 {
     public override void Register(CpModel cpModel, CoInput input, CoVariables cpVariables)
     {
-        foreach (IGrouping<int, CoPupil> grouping in input.Pupils.GroupBy(group => group.GroupId))
+        int spread = 3;
+
+        foreach (IGrouping<int, CoPupil> grouping in input.Pupils.GroupBy(pupil => pupil.GroupId))
         {
-            int upperbound = (grouping.Count() / input.ActivityCount()) + 2;
+            int pupilCountInGroup = grouping.Count();
+            int upperbound = pupilCountInGroup / input.ActivityCount() + spread;
 
             foreach (CoActivity activity in input.Activities)
             {
                 LinearExprBuilder linearExprBuilder = LinearExpr.NewBuilder();
                 foreach (CoPupil pupil in grouping)
                 {
-                    for (int i = 0; i < activity.MaxCapacity; i++)
-                    {
-                        linearExprBuilder.Add(cpVariables[(pupil, activity, i)]);
-                    }
+                    cpVariables[(pupil.BuddyGroup, activity)].ForEach(boolVar => linearExprBuilder.Add(boolVar));
                 }
 
                 cpModel.AddLinearConstraint(linearExprBuilder, 0, upperbound);

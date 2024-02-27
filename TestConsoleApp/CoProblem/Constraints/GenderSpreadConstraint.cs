@@ -1,16 +1,19 @@
-﻿namespace TestConsoleApp.Constraints;
+﻿namespace TestConsoleApp.CoProblem.Constraints;
 
 using Google.OrTools.Sat;
 using MdkConstraintProgrammingLibrary;
+using TestConsoleApp.CoProblem;
 
 /// <summary>Pupils are spread by gender.</summary>
-internal class GenderSpreadConstraint : MdkCpConstraint<CoInput, CoVariables>
+internal sealed class GenderSpreadConstraint : MdkCpConstraint<CoInput, CoVariables>
 {
     public override void Register(CpModel cpModel, CoInput input, CoVariables cpVariables)
     {
+        int spread = 3;
+
         int femaleSurplusPerActivity = (input.FemaleCount() - input.MaleCount()) / input.ActivityCount();
-        int lowerBound = femaleSurplusPerActivity - 2;
-        int upperBound = femaleSurplusPerActivity + 2;
+        int lowerBound = femaleSurplusPerActivity - spread;
+        int upperBound = femaleSurplusPerActivity + spread;
 
         foreach (CoActivity activity in input.Activities)
         {
@@ -18,10 +21,7 @@ internal class GenderSpreadConstraint : MdkCpConstraint<CoInput, CoVariables>
             foreach (CoPupil pupil in input.Pupils)
             {
                 int coefficient = pupil.Gender == Gender.Female ? 1 : -1;
-                for (int i = 0; i < activity.MaxCapacity; i++)
-                {
-                    linearExprBuilder.AddTerm(cpVariables[(pupil, activity, i)], coefficient);
-                }
+                cpVariables[(pupil.BuddyGroup, activity)].ForEach(boolVar => linearExprBuilder.AddTerm(boolVar, coefficient));
             }
 
             cpModel.AddLinearConstraint(linearExprBuilder, lowerBound, upperBound);

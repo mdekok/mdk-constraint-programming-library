@@ -1,5 +1,4 @@
-﻿
-namespace TestConsoleApp;
+﻿namespace TestConsoleApp.CoProblem;
 
 using FluentValidation;
 using FluentValidation.Results;
@@ -70,7 +69,7 @@ internal class CoInputValidator : AbstractValidator<CoInput>, IMdkCpInputValidat
         ValidationContext<CoInput> context = new ValidationContext<CoInput>(input);
         context.RootContextData[ValidationContextInputKey] = input;
 
-        ValidationResult validationResult = this.Validate(context);
+        ValidationResult validationResult = Validate(context);
 
         if (!validationResult.IsValid)
             throw new CoException(validationResult.Errors.Select(failure => failure.ErrorMessage));
@@ -81,7 +80,7 @@ public class CoException : Exception
 {
     public CoException(IEnumerable<string> errors)
         : base(errors.FirstOrDefault())
-        => this.Errors = errors.ToList();
+        => Errors = errors.ToList();
 
     public IList<string> Errors { get; init; }
 }

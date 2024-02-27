@@ -6,13 +6,16 @@ public class MdkCpSolver<TInput, TVariables>
     where TInput : class
     where TVariables : class
 {
-    private CpModel googleCpModel = new();
-    private CpSolver googleCpSolver = new();
+    private readonly CpModel googleCpModel = new();
+    private readonly CpSolver googleCpSolver = new();
 
-    public required TInput Input { get; set; }
+    public MdkCpSolver(TInput Input)
+        => this.Input = Input;
+
+    public TInput Input { get; }
 
     /// <summary>Gets or sets the max time in seconds the solver is allowed to take to come to a solution.</summary>
-    public int TimeLimitInSeconds { get; set; } = 10;
+    protected int TimeLimitInSeconds { get; set; } = 10;
 
     #region InputValidator
 
@@ -81,7 +84,9 @@ public class MdkCpSolver<TInput, TVariables>
 
     public CpSolverStatus Solve(SolutionCallback? solutionCallback = null)
     {
-        this.googleCpSolver.StringParameters = $"max_time_in_seconds:{this.TimeLimitInSeconds}";
+        this.googleCpSolver.StringParameters = $"max_time_in_seconds:{this.TimeLimitInSeconds} ";
+        this.googleCpSolver.StringParameters += "enumerate_all_solutions:true ";
+        this.googleCpSolver.StringParameters += "linearization_level:2 ";
 
         this.inputValidator?.Validate(this.Input);
 
@@ -92,7 +97,7 @@ public class MdkCpSolver<TInput, TVariables>
         this.constraints.ForEach(constraint => constraint.Register(this.googleCpModel, this.Input, this.Variables));
 
         CpSolverStatus solverStatus = CpSolverStatus.Unknown;
-        if (this.objectives.Any())
+        if (this.objectives.Count != 0)
         {
             foreach (MdkCpObjective<TInput, TVariables> objective in this.objectives)
             {
