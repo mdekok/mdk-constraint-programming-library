@@ -2,5 +2,5 @@
 
 using Google.OrTools.Sat;
 
-internal sealed class CoVariables : Dictionary<(CoBuddyGroup BuddyGroup, CoActivity Activity), List<BoolVar>>
+internal sealed class CoVariables : Dictionary<(CoBuddyGroup BuddyGroup, CoActivityGroup ActivityGroup), List<BoolVar>>
 { }

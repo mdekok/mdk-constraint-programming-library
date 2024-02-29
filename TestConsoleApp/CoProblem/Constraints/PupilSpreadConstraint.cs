@@ -4,52 +4,56 @@ using Google.OrTools.Sat;
 using MdkConstraintProgrammingLibrary;
 using TestConsoleApp.CoProblem;
 
-/// <summary>Pupils are spread over activities.</summary>
+/// <summary>Pupils are spread over locations and activities.</summary>
 internal sealed class PupilSpreadConstraint : MdkCpConstraint<CoInput, CoVariables>
 {
     public override void Register(CpModel cpModel, CoInput input, CoVariables cpVariables)
     {
         int spread = 2;
 
-        int pupilsPerActivityAvg = input.PupilCount() / input.ActivityCount();
-        int capacityAssigned = 0;
-        int activitiesRemaining = input.ActivityCount();
-
-        // Assign maximum capacity if maximum capacity is set
-        foreach (CoActivity activity in input.Activities.Where(activity => activity.MaxCapacity != 0))
+        // Calculate the number of location with maximum capacity and the total capacity of these locations.
+        int maximizedLocationCount = 0;
+        int maximizedLocationCapacity = 0;
+        foreach (CoLocation location in input.Locations.Where(location => location.MaxCapacity != 0))
         {
-            int maxCapacity = activity.MaxCapacity - input.DoOrDontCapacityNeeded(activity);
-
-            LinearExprBuilder linearExprBuilder = LinearExpr.NewBuilder();
-
-            foreach (CoBuddyGroup buddyGroup in input.BuddyGroups)
-            {
-                cpVariables[(buddyGroup, activity)].ForEach(boolVar => linearExprBuilder.AddTerm(boolVar, buddyGroup.Pupils.Count));
-            }
-
-            cpModel.AddLinearConstraint(linearExprBuilder, maxCapacity - 1, maxCapacity);
-
-            capacityAssigned += activity.MaxCapacity - 1;
-            activitiesRemaining--;
+            maximizedLocationCount++;
+            maximizedLocationCapacity += location.MaxCapacity;
         }
 
-        int pupilPerActivityRemainingAvg = (input.PupilCount() - capacityAssigned) / activitiesRemaining;
-        Console.WriteLine($"Remaining average Pupils per activity: {pupilPerActivityRemainingAvg}");
-        int lowerBound = pupilPerActivityRemainingAvg - spread;
-        int upperBound = pupilPerActivityRemainingAvg + spread;
+        // Locations with a maximum capacity are assigned as much as possible.
+        // The remaining needed capacity is distributed over the other locations.
+        int pupilCountPerNonMaximizedLocationAvg = (input.PupilCount() - maximizedLocationCapacity) / (input.LocationCount() - maximizedLocationCount);
+        Console.WriteLine($"Remaining average Pupils per location: {pupilCountPerNonMaximizedLocationAvg}");
 
-        // Assign bandwidth of +-spread capacity assignment around remaining average number of pupils per activity
-        // if maximum capacity is not set
-        foreach (CoActivity activity in input.Activities.Where(activity => activity.MaxCapacity == 0))
+        foreach (CoLocation location in input.Locations)
         {
-            LinearExprBuilder linearExprBuilder = LinearExpr.NewBuilder();
+            int activityGroupCount = location.ActivityGroups.Count;
 
-            foreach (CoBuddyGroup buddyGroup in input.BuddyGroups)
+            int lowerBound = location.MaxCapacity == 0
+                ? (pupilCountPerNonMaximizedLocationAvg - spread) / activityGroupCount
+                : location.MaxCapacity / activityGroupCount - 1;
+            int upperBound = location.MaxCapacity == 0
+                ? (pupilCountPerNonMaximizedLocationAvg + spread) / activityGroupCount
+                : location.MaxCapacity / activityGroupCount;
+
+            foreach (CoActivityGroup activityGroup in location.ActivityGroups)
             {
-                cpVariables[(buddyGroup, activity)].ForEach(boolVar => linearExprBuilder.AddTerm(boolVar, buddyGroup.Pupils.Count));
-            }
+                LinearExprBuilder linearExprBuilder = LinearExpr.NewBuilder();
 
-            cpModel.AddLinearConstraint(linearExprBuilder, lowerBound, upperBound);
+                foreach (CoBuddyGroup buddyGroup in input.PlannableBuddyGroups())
+                {
+                    cpVariables[(buddyGroup, activityGroup)].ForEach(boolVar => linearExprBuilder.AddTerm(boolVar, buddyGroup.Pupils.Count));
+                }
+
+                // Take into account the capacity needed to pupils (with buddy group) that are preassigned to any of the activities of the activity group.
+                int alreadyAssignedPupilCount = 0;
+                foreach (CoActivity activity in activityGroup.Activities)
+                {
+                    alreadyAssignedPupilCount += input.MustDoBuddyGroups(activity).Sum(buddyGroup => buddyGroup.Pupils.Count);
+                }
+
+                cpModel.AddLinearConstraint(linearExprBuilder, lowerBound - alreadyAssignedPupilCount, upperBound - alreadyAssignedPupilCount);
+            }
         }
     }
 }

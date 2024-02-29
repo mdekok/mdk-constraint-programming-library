@@ -11,6 +11,7 @@ internal sealed class CoImporter(CoInput input)
     {
         Delimiter = ";"
     };
+    readonly BooleanConverter booleanConverter = new();
     readonly NullableIntConverter nullableIntConverter = new();
     readonly GenderConverter genderConverter = new();
 
@@ -34,7 +35,7 @@ internal sealed class CoImporter(CoInput input)
             int pupilId = csv.GetField<int>("Id");
             int buddyGroupId = csv.GetField<int>("Team", nullableIntConverter);
 
-            CoBuddyGroup? buddyGroup = input.BuddyGroups.FirstOrDefault(buddyGroup => buddyGroup.Id == buddyGroupId);
+            CoBuddyGroup? buddyGroup;
 
             if (buddyGroupId == 0) // Pupil is not in a buddy group, he/she is in a group of his/her own.
             {
@@ -72,13 +73,28 @@ internal sealed class CoImporter(CoInput input)
         while (csv.Read())
         {
             int activityId = csv.GetField<int>("IdActivity");
+            int locationId = csv.GetField<int>("IdLocation");
             int maxCapacity = csv.GetField<int>("MaxCapacity", nullableIntConverter);
-            if (activityId == 10 || activityId == 22)
+            bool doAll = csv.GetField<bool>("HasCombiActivities", booleanConverter);
+
+            CoLocation? location = input.Locations.FirstOrDefault(location => location.Id == locationId);
+            if (location is null)
             {
-                maxCapacity = 12;
+                location = new CoLocation(locationId, maxCapacity, doAll, []);
+                input.Locations.Add(location);
             }
 
-            input.Activities.Add(new(activityId, maxCapacity));
+            CoActivity activity = new(activityId, location);
+            input.Activities.Add(activity);
+
+            if (doAll && location.ActivityGroups.Count == 1)
+            {
+                location.ActivityGroups.First().Activities.Add(activity);
+            }
+            else
+            {
+                location.ActivityGroups.Add(new CoActivityGroup([activity], location));
+            }
         }
     }
 

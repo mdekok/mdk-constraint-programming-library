@@ -9,24 +9,33 @@ internal sealed class PupilNeedingAttentionSpreadConstraint : MdkCpConstraint<Co
 {
     public override void Register(CpModel cpModel, CoInput input, CoVariables cpVariables)
     {
-        int pupilNeedingAttentionPerActivityAvg = input.NeedingAttentionCount() / input.Activities.Count;
+        int pupilNeedingAttentionPerLocationAvg = input.NeedingAttentionCount() / input.Locations.Count;
 
-        // Assign maximum capacity if maximum capacity is less than average number of pupils per activity
-        foreach (CoActivity activity in input.Activities)
+        foreach (CoLocation location in input.Locations)
         {
             LinearExprBuilder linearExprBuilder = LinearExpr.NewBuilder();
 
-            foreach (CoBuddyGroup buddyGroup in input
-                .BuddyGroups
-                .Where(buddyGroup => buddyGroup
-                    .Pupils
-                    .Any(pupil => pupil.NeedsAttention)))
+            foreach (CoActivityGroup activityGroup in location.ActivityGroups)
+                foreach (CoBuddyGroup buddyGroup in input
+                    .PlannableBuddyGroups()
+                    .Where(buddyGroup => buddyGroup
+                        .Pupils
+                        .Any(pupil => pupil.NeedsAttention)))
+                {
+                    cpVariables[(buddyGroup, activityGroup)].ForEach(boolVar
+                        => linearExprBuilder.AddTerm(boolVar, buddyGroup.Pupils.Count(pupil => pupil.NeedsAttention)));
+                }
+
+            // Take into account the pupils that are preassigned to this location.
+            int mustDoConstant = input
+                .MustDoBuddyGroups(location)
+                .Sum(buddyGroup => buddyGroup.Pupils.Count(pupil => pupil.NeedsAttention));
+            if (mustDoConstant != 0)
             {
-                cpVariables[(buddyGroup, activity)].ForEach(boolVar
-                    => linearExprBuilder.AddTerm(boolVar, buddyGroup.Pupils.Count(pupil => pupil.NeedsAttention)));
+                linearExprBuilder.Add(mustDoConstant);
             }
 
-            cpModel.AddLinearConstraint(linearExprBuilder, pupilNeedingAttentionPerActivityAvg, pupilNeedingAttentionPerActivityAvg + 1);
+            cpModel.AddLinearConstraint(linearExprBuilder, pupilNeedingAttentionPerLocationAvg, pupilNeedingAttentionPerLocationAvg + 1);
         }
     }
 }

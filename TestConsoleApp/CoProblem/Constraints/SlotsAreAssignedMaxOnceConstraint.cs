@@ -9,19 +9,21 @@ internal class SlotsAreAssignedMaxOnceConstraint : MdkCpConstraint<CoInput, CoVa
 {
     public override void Register(CpModel cpModel, CoInput input, CoVariables cpVariables)
     {
-        foreach (CoActivity activity in input.Activities)
-        {
-            int slotCount = cpVariables
-                .Where(ba => ba.Key.Activity == activity)
-                .First()
-                .Value.Count;
-
-            for (int i = 0; i < slotCount; i++)
+        foreach (CoLocation location in input.Locations)
+            foreach (CoActivityGroup activityGroup in location.ActivityGroups)
             {
-                cpModel.AddAtMostOne(cpVariables
-                    .Where(slot => slot.Key.Activity == activity)
-                    .Select(slot => slot.Value[i]));
+                int slotCount = cpVariables
+                    .Where(ba => ba.Key.ActivityGroup == activityGroup)
+                    .First()
+                    .Value
+                    .Count;
+
+                for (int i = 0; i < slotCount; i++)
+                {
+                    cpModel.AddAtMostOne(cpVariables
+                        .Where(slot => slot.Key.ActivityGroup == activityGroup)
+                        .Select(slot => slot.Value[i]));
+                }
             }
-        }
     }
 }

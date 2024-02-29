@@ -7,11 +7,13 @@ using TestConsoleApp.CoProblem;
 /// <summary>The buddy groups do exactly one activity.</summary>
 internal sealed class BuddyGroupsDoExactlyOneActivityConstraint : MdkCpConstraint<CoInput, CoVariables>
 {
-    public override void Register(CpModel cpModel, CoInput input, CoVariables cpVariables) =>
-        input.BuddyGroups.ForEach(buddyGroup =>
+    public override void Register(CpModel cpModel, CoInput input, CoVariables cpVariables)
+    {
+        foreach (CoBuddyGroup buddyGroup in input.PlannableBuddyGroups())
         {
             cpModel.AddExactlyOne(cpVariables
                 .Where(ba => ba.Key.BuddyGroup == buddyGroup)
                 .SelectMany(ba => ba.Value));
-        });
+        }
+    }
 }

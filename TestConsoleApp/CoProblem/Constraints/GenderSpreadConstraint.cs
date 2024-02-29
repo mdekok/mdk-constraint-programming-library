@@ -11,17 +11,28 @@ internal sealed class GenderSpreadConstraint : MdkCpConstraint<CoInput, CoVariab
     {
         int spread = 3;
 
-        int femaleSurplusPerActivity = (input.FemaleCount() - input.MaleCount()) / input.ActivityCount();
-        int lowerBound = femaleSurplusPerActivity - spread;
-        int upperBound = femaleSurplusPerActivity + spread;
+        int femaleSurplusPerLocation = (input.FemaleCount() - input.MaleCount()) / input.LocationCount();
+        int lowerBound = femaleSurplusPerLocation - spread;
+        int upperBound = femaleSurplusPerLocation + spread;
 
-        foreach (CoActivity activity in input.Activities)
+        foreach (CoLocation location in input.Locations)
         {
             LinearExprBuilder linearExprBuilder = LinearExpr.NewBuilder();
-            foreach (CoPupil pupil in input.Pupils)
+
+            foreach (CoActivityGroup activityGroup in location.ActivityGroups)
+                foreach (CoPupil pupil in input.PlannableBuddyGroups().SelectMany(buddyGroup => buddyGroup.Pupils))
+                {
+                    int coefficient = pupil.Gender == Gender.Female ? 1 : -1;
+                    cpVariables[(pupil.BuddyGroup, activityGroup)].ForEach(boolVar => linearExprBuilder.AddTerm(boolVar, coefficient));
+                }
+
+            // Take into account the pupils that are preassigned to this location.
+            int mustDoConstant = input
+                .MustDoBuddyGroups(location)
+                .Sum(buddyGroup => buddyGroup.Pupils.Sum(pupil => pupil.Gender == Gender.Female ? 1 : -1));
+            if (mustDoConstant != 0)
             {
-                int coefficient = pupil.Gender == Gender.Female ? 1 : -1;
-                cpVariables[(pupil.BuddyGroup, activity)].ForEach(boolVar => linearExprBuilder.AddTerm(boolVar, coefficient));
+                linearExprBuilder.Add(mustDoConstant);
             }
 
             cpModel.AddLinearConstraint(linearExprBuilder, lowerBound, upperBound);

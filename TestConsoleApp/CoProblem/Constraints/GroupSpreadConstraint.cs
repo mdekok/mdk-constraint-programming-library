@@ -11,20 +11,25 @@ internal sealed class GroupSpreadConstraint : MdkCpConstraint<CoInput, CoVariabl
     {
         int spread = 3;
 
-        foreach (IGrouping<int, CoPupil> grouping in input.Pupils.GroupBy(pupil => pupil.GroupId))
+        foreach (IGrouping<int, CoPupil> grouping in input.PlannablePupils().GroupBy(pupil => pupil.GroupId))
         {
             int pupilCountInGroup = grouping.Count();
-            int upperbound = pupilCountInGroup / input.ActivityCount() + spread;
+            int upperBound = pupilCountInGroup / input.LocationCount() + spread;
 
-            foreach (CoActivity activity in input.Activities)
+            foreach (CoLocation location in input.Locations)
             {
                 LinearExprBuilder linearExprBuilder = LinearExpr.NewBuilder();
-                foreach (CoPupil pupil in grouping)
-                {
-                    cpVariables[(pupil.BuddyGroup, activity)].ForEach(boolVar => linearExprBuilder.Add(boolVar));
-                }
 
-                cpModel.AddLinearConstraint(linearExprBuilder, 0, upperbound);
+                foreach (CoActivityGroup activityGroup in location.ActivityGroups)
+                    foreach (CoPupil pupil in grouping)
+                    {
+                        cpVariables[(pupil.BuddyGroup, activityGroup)].ForEach(boolVar => linearExprBuilder.Add(boolVar));
+                    }
+
+                // ToDo : Take into account the pupils that are preassigned like in GenderSpreadConstraint.
+                // Does not seem to be very necessary seeing test results.
+
+                cpModel.AddLinearConstraint(linearExprBuilder, 0, upperBound);
             }
         }
     }

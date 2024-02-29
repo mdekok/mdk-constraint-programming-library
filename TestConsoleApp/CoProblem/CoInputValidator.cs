@@ -11,6 +11,10 @@ internal class CoInputValidator : AbstractValidator<CoInput>, IMdkCpInputValidat
     public CoInputValidator()
     {
         RuleFor(input => input.Activities.Count).GreaterThan(0);
+
+        // Test MustDo on multiple activities.
+        // Test not all locations should be maximized.
+
         //RuleFor(d => d.Participants.Count).GreaterThan(0);
         //RuleForEach(d => d.Participants)
         //    .ChildRules(participant =>

@@ -2,9 +2,10 @@
 
 using Google.OrTools.Sat;
 
-public class MdkCpSolver<TInput, TVariables>
+public class MdkCpSolver<TInput, TVariables, TResults>
     where TInput : class
     where TVariables : class
+    where TResults : class, new()
 {
     private readonly CpModel googleCpModel = new();
     private readonly CpSolver googleCpSolver = new();
@@ -19,7 +20,7 @@ public class MdkCpSolver<TInput, TVariables>
 
     #region InputValidator
 
-    public MdkCpSolver<TInput, TVariables> SetInputValidator<TInputValidator>()
+    public MdkCpSolver<TInput, TVariables, TResults> SetInputValidator<TInputValidator>()
         where TInputValidator : class, IMdkCpInputValidator<TInput>, new()
     {
         this.inputValidator = new TInputValidator();
@@ -32,7 +33,7 @@ public class MdkCpSolver<TInput, TVariables>
 
     #region Variables
 
-    public MdkCpSolver<TInput, TVariables> SetVariablesBuilder<TVariablesBuilder>()
+    public MdkCpSolver<TInput, TVariables, TResults> SetVariablesBuilder<TVariablesBuilder>()
         where TVariablesBuilder : MdkCpVariablesBuilder<TInput, TVariables>, new()
     {
         this.variablesBuilder = new TVariablesBuilder();
@@ -58,7 +59,7 @@ public class MdkCpSolver<TInput, TVariables>
 
     #region Constraints
 
-    public MdkCpSolver<TInput, TVariables> AddConstraint<TConstraint>()
+    public MdkCpSolver<TInput, TVariables, TResults> AddConstraint<TConstraint>()
         where TConstraint : MdkCpConstraint<TInput, TVariables>, new()
     {
         this.constraints.Add(new TConstraint());
@@ -71,7 +72,7 @@ public class MdkCpSolver<TInput, TVariables>
 
     #region Objectives
 
-    public MdkCpSolver<TInput, TVariables> AddObjective<TObjective>()
+    public MdkCpSolver<TInput, TVariables, TResults> AddObjective<TObjective>()
         where TObjective : MdkCpObjective<TInput, TVariables>, new()
     {
         this.objectives.Add(new TObjective());
@@ -82,7 +83,20 @@ public class MdkCpSolver<TInput, TVariables>
 
     #endregion
 
-    public CpSolverStatus Solve(SolutionCallback? solutionCallback = null)
+    #region Results
+
+    public MdkCpSolver<TInput, TVariables, TResults> SetResultsBuilder<TResultsBuilder>()
+        where TResultsBuilder : MdkCpResultsBuilder<TInput, TVariables, TResults>, new()
+    {
+        this.resultsBuilder = new TResultsBuilder();
+        return this;
+    }
+
+    private MdkCpResultsBuilder<TInput, TVariables, TResults>? resultsBuilder;
+
+    #endregion
+
+    public TResults Solve(SolutionCallback? solutionCallback = null)
     {
         this.googleCpSolver.StringParameters = $"max_time_in_seconds:{this.TimeLimitInSeconds} ";
         this.googleCpSolver.StringParameters += "enumerate_all_solutions:true ";
@@ -118,7 +132,10 @@ public class MdkCpSolver<TInput, TVariables>
             solverStatus = this.googleCpSolver.Solve(this.googleCpModel, solutionCallback);
         }
 
-        return solverStatus;
+        if (this.resultsBuilder is null)
+            throw new ArgumentException("Results builder not set.");
+
+        return this.resultsBuilder.Build(this.Input, this.Variables, this.googleCpSolver, solverStatus);
     }
 
     public long Value(IntVar intVar) => this.googleCpSolver.Value(intVar);

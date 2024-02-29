@@ -23,16 +23,51 @@ internal static class CoInputExtensions
     public static int ActivityCount(this CoInput input)
         => input.Activities.Count;
 
+    /// <summary>Total number of locations.</summary>
+    public static int LocationCount(this CoInput input)
+        => input.Locations.Count;
+
     /// <summary>Total number of buddy groups.</summary>
     public static int BuddyGroupCount(this CoInput input)
         => input.BuddyGroups.Count;
 
-    /// <summary>Total capacity needed for activity due to pupils mandatory doing this activity.</summary>
-    public static int DoOrDontCapacityNeeded(this CoInput input, CoActivity activity)
+    /// <summary>Buddy groups that must do an activity on a location due to pupils mandatory doing activities.</summary>
+    public static IEnumerable<CoBuddyGroup> MustDoBuddyGroups(this CoInput input, CoLocation location)
+        => input
+            .DoOrDonts
+            .Where(doOrDont => location.ActivityGroups.SelectMany(activityGroup => activityGroup.Activities).Contains(doOrDont.Activity) && doOrDont.MustDo)
+            .Select(CoDoOrDont => CoDoOrDont.Pupil.BuddyGroup)
+            .Distinct();
+
+    public static IEnumerable<CoBuddyGroup> MustDoBuddyGroups(this CoInput input, CoActivity activity)
         => input
             .DoOrDonts
             .Where(doOrDont => doOrDont.Activity == activity && doOrDont.MustDo)
             .Select(CoDoOrDont => CoDoOrDont.Pupil.BuddyGroup)
-            .Distinct()
-            .Sum(buddyGroup => buddyGroup.Pupils.Count);
+            .Distinct();
+
+    public static List<CoBuddyGroup> PreAssignedBuddyGroups(this CoInput input)
+        => input.DoOrDonts
+            .Where(doOrDont => doOrDont.MustDo)
+            .Select(doOrDont => doOrDont.Pupil.BuddyGroup)
+            .ToList();
+
+    public static List<CoBuddyGroup> PlannableBuddyGroups(this CoInput input)
+        => input
+           .BuddyGroups
+           .Where(buddyGroup => !input.PreAssignedBuddyGroups().Contains(buddyGroup))
+           .ToList();
+
+    public static List<CoPupil> PlannablePupils(this CoInput input)
+    {
+        List<CoPupil> pupilsPreAssigned = input
+            .PreAssignedBuddyGroups()
+            .SelectMany(buddyGroup => buddyGroup.Pupils)
+            .ToList();
+
+        return input
+           .Pupils
+           .Where(pupil => !pupilsPreAssigned.Contains(pupil))
+           .ToList();
+    }
 }
