@@ -1,5 +1,4 @@
 ﻿using Google.OrTools.Sat;
-using System.Diagnostics;
 using TestConsoleApp;
 using TestConsoleApp.CoProblem;
 using TestConsoleApp.CoProblem.Constraints;
@@ -33,28 +32,19 @@ solver
 
     .SetResultsBuilder<CoResultsBuilder>();
 
-Stopwatch stopwatch = Stopwatch.StartNew();
-
 SolutionCallback solutionCallback = new ObjectiveSolutionPrinter();
-
-//CpSolverStatus solverStatus =
 
 CoResults results = solver.Solve(solutionCallback);
 
-// Console.WriteLine($"Solver status: {solverStatus}");
+Console.WriteLine($"Solver status: {results.SolverStatus}");
+Console.WriteLine($"Elapsed time: {results.WallTime} s");
+Console.WriteLine($"Objective: {results.ObjectiveValue}, branches: {results.NumBranches}, conflicts: {results.NumConflicts}");
 
-stopwatch.Stop();
-
-// bool solutionFound = solverStatus == CpSolverStatus.Optimal || solverStatus == CpSolverStatus.Feasible;
-
-//if (!solutionFound)
-//{
-//    Console.WriteLine("No solution found");
-//    Environment.Exit(1);
-//}
-
-Console.WriteLine($"Elapsed time: {stopwatch.ElapsedMilliseconds} ms");
-Console.WriteLine($"Objective: {solver.ObjectiveValue}, branches: {solver.NumBranches}, conflicts: {solver.NumConflicts}, walltime: {solver.WallTime}");
+if (results.SolverStatus != CpSolverStatus.Optimal && results.SolverStatus != CpSolverStatus.Feasible)
+{
+    Console.WriteLine("No solution found");
+    Environment.Exit(1);
+}
 
 Console.WriteLine();
 Console.WriteLine($"Solution with general spread info:");
@@ -66,7 +56,7 @@ foreach (CoActivity activity in input.Activities)
     int nFemale = 0;
     int nNeedAttention = 0;
 
-    List<CoResult> activityResults = results.Where(result => result.Activity == activity).ToList();
+    List<CoResult> activityResults = results.Values.Where(result => result.Activity == activity).ToList();
 
     foreach (CoResult result in activityResults)
     {
@@ -111,7 +101,7 @@ Console.WriteLine($"History gaps distribution:");
 
 int[] HistoryGapCount = new int[input.Configuration.MaxHistoryGap + 1];
 
-foreach (CoResult result in results)
+foreach (CoResult result in results.Values)
 {
     int historyGap = input.History[(result.Activity, result.Pupil.BuddyGroup)];
     HistoryGapCount[historyGap]++;

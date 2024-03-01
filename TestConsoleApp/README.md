@@ -1,8 +1,6 @@
 ﻿ToDo:
 - Parameterizing: spreads
-- Results (time, FoundSolution, IsOptimal, ObjectiveValue)
 - Console logging
-
 
 Activities from old database:
 

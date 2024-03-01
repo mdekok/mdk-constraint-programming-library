@@ -5,7 +5,7 @@ using Google.OrTools.Sat;
 public class MdkCpSolver<TInput, TVariables, TResults>
     where TInput : class
     where TVariables : class
-    where TResults : class, new()
+    where TResults : MdkCpResults, new()
 {
     private readonly CpModel googleCpModel = new();
     private readonly CpSolver googleCpSolver = new();
@@ -137,10 +137,4 @@ public class MdkCpSolver<TInput, TVariables, TResults>
 
         return this.resultsBuilder.Build(this.Input, this.Variables, this.googleCpSolver, solverStatus);
     }
-
-    public long Value(IntVar intVar) => this.googleCpSolver.Value(intVar);
-    public double ObjectiveValue => this.googleCpSolver.ObjectiveValue;
-    public long NumConflicts => this.googleCpSolver.NumConflicts();
-    public long NumBranches => this.googleCpSolver.NumBranches();
-    public double WallTime => this.googleCpSolver.WallTime();
 }

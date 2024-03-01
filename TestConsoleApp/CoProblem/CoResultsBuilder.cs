@@ -20,7 +20,7 @@ internal class CoResultsBuilder : MdkCpResultsBuilder<CoInput, CoVariables, CoRe
                     .First(activityGroup => activityGroup.Activities.Contains(doOrDont.Activity));
                 foreach (CoActivity activity in activityGroup.Activities)
                 {
-                    doOrDont.Pupil.BuddyGroup.Pupils.ForEach(pupil => results.Add(new(pupil, activity)));
+                    doOrDont.Pupil.BuddyGroup.Pupils.ForEach(pupil => results.Values.Add(new(pupil, activity)));
                 }
             };
 
@@ -32,7 +32,7 @@ internal class CoResultsBuilder : MdkCpResultsBuilder<CoInput, CoVariables, CoRe
                         {
                             foreach (CoActivity activity in activityGroup.Activities)
                             {
-                                buddyGroup.Pupils.ForEach(pupil => results.Add(new(pupil, activity)));
+                                buddyGroup.Pupils.ForEach(pupil => results.Values.Add(new(pupil, activity)));
                             }
                         }
                     }

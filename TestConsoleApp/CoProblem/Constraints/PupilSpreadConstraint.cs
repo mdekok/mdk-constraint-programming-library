@@ -23,7 +23,6 @@ internal sealed class PupilSpreadConstraint : MdkCpConstraint<CoInput, CoVariabl
         // Locations with a maximum capacity are assigned as much as possible.
         // The remaining needed capacity is distributed over the other locations.
         int pupilCountPerNonMaximizedLocationAvg = (input.PupilCount() - maximizedLocationCapacity) / (input.LocationCount() - maximizedLocationCount);
-        Console.WriteLine($"Remaining average Pupils per location: {pupilCountPerNonMaximizedLocationAvg}");
 
         foreach (CoLocation location in input.Locations)
         {

@@ -9,7 +9,4 @@ internal sealed class CoSolver : MdkCpSolver<CoInput, CoVariables, CoResults>
     {
         this.TimeLimitInSeconds = input.Configuration.TimeLimitInSeconds;
     }
-
-    public bool IsSet(CoBuddyGroup buddyGroup, CoActivityGroup activityGroup)
-        => this.Variables[(buddyGroup, activityGroup)].Any(boolVar => this.Value(boolVar) == 1L);
 }
