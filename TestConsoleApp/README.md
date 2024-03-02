@@ -1,6 +1,7 @@
 ﻿ToDo:
-- Parameterizing: spreads
+- Parameterizing: enumerate_all_solutions:true linearization_level:2
 - Console logging
+- Input validation
 
 Activities from old database:
 

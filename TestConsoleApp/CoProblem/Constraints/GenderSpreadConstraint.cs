@@ -9,11 +9,11 @@ internal sealed class GenderSpreadConstraint : MdkCpConstraint<CoInput, CoVariab
 {
     public override void Register(CpModel cpModel, CoInput input, CoVariables cpVariables)
     {
-        int spread = 3;
+        int maxSpread = input.Configuration.GenderSpread;
 
         int femaleSurplusPerLocation = (input.FemaleCount() - input.MaleCount()) / input.LocationCount();
-        int lowerBound = femaleSurplusPerLocation - spread;
-        int upperBound = femaleSurplusPerLocation + spread;
+        int lowerBound = femaleSurplusPerLocation - maxSpread;
+        int upperBound = femaleSurplusPerLocation + maxSpread;
 
         foreach (CoLocation location in input.Locations)
         {

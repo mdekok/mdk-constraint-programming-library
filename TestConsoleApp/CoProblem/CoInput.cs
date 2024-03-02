@@ -22,6 +22,15 @@ internal sealed record class CoInputConfiguration
     /// History gaps are also maximized to this value.
     /// </summary>
     public int MaxHistoryGap { get; set; } = 10;
+
+    /// <summary>Gets or sets the pupil spread: max deviation from average pupil count per location.</summary>
+    public int PupilSpread { get; set; } = 2;
+
+    /// <summary>Gets or sets the gender spread: max deviation from average female count per location.</summary>
+    public int GenderSpread { get; set; } = 3;
+
+    /// <summary>Gets or sets the group spread: max deviation from average group count per location.</summary>
+    public int GroupSpread { get; set; } = 3;
 }
 
 internal sealed record class CoPupil(int Id, Gender Gender, int GroupId, bool NeedsAttention, CoBuddyGroup BuddyGroup);

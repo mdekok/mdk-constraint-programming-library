@@ -9,12 +9,13 @@ internal sealed class GroupSpreadConstraint : MdkCpConstraint<CoInput, CoVariabl
 {
     public override void Register(CpModel cpModel, CoInput input, CoVariables cpVariables)
     {
-        int spread = 3;
+        int maxSpread = input.Configuration.GroupSpread;
 
         foreach (IGrouping<int, CoPupil> grouping in input.PlannablePupils().GroupBy(pupil => pupil.GroupId))
         {
-            int pupilCountInGroup = grouping.Count();
-            int upperBound = pupilCountInGroup / input.LocationCount() + spread;
+            int pupilCountInGroupAvg = grouping.Count() / input.LocationCount();
+            int lowerBound = Math.Max(pupilCountInGroupAvg - maxSpread, 0);
+            int upperBound = pupilCountInGroupAvg + maxSpread;
 
             foreach (CoLocation location in input.Locations)
             {
@@ -29,7 +30,7 @@ internal sealed class GroupSpreadConstraint : MdkCpConstraint<CoInput, CoVariabl
                 // ToDo : Take into account the pupils that are preassigned like in GenderSpreadConstraint.
                 // Does not seem to be very necessary seeing test results.
 
-                cpModel.AddLinearConstraint(linearExprBuilder, 0, upperBound);
+                cpModel.AddLinearConstraint(linearExprBuilder, lowerBound, upperBound);
             }
         }
     }

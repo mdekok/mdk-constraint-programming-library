@@ -9,7 +9,7 @@ internal sealed class PupilSpreadConstraint : MdkCpConstraint<CoInput, CoVariabl
 {
     public override void Register(CpModel cpModel, CoInput input, CoVariables cpVariables)
     {
-        int spread = 2;
+        int maxSpread = input.Configuration.PupilSpread;
 
         // Calculate the number of location with maximum capacity and the total capacity of these locations.
         int maximizedLocationCount = 0;
@@ -29,10 +29,10 @@ internal sealed class PupilSpreadConstraint : MdkCpConstraint<CoInput, CoVariabl
             int activityGroupCount = location.ActivityGroups.Count;
 
             int lowerBound = location.MaxCapacity == 0
-                ? (pupilCountPerNonMaximizedLocationAvg - spread) / activityGroupCount
+                ? (pupilCountPerNonMaximizedLocationAvg - maxSpread) / activityGroupCount
                 : location.MaxCapacity / activityGroupCount - 1;
             int upperBound = location.MaxCapacity == 0
-                ? (pupilCountPerNonMaximizedLocationAvg + spread) / activityGroupCount
+                ? (pupilCountPerNonMaximizedLocationAvg + maxSpread) / activityGroupCount
                 : location.MaxCapacity / activityGroupCount;
 
             foreach (CoActivityGroup activityGroup in location.ActivityGroups)
