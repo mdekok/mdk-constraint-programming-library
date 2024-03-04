@@ -5,7 +5,7 @@ using System.Globalization;
 
 namespace TestConsoleApp.CoProblem.Import;
 
-internal sealed class CoImporter(CoInput input)
+internal sealed class CoImporter(CoConfiguration configuration, CoInput input)
 {
     readonly CsvConfiguration config = new(CultureInfo.InvariantCulture)
     {
@@ -103,7 +103,7 @@ internal sealed class CoImporter(CoInput input)
         foreach (CoActivity activity in input.Activities)
             foreach (CoBuddyGroup buddyGroup in input.BuddyGroups)
             {
-                input.History[(activity, buddyGroup)] = input.Configuration.MaxHistoryGap; // Set to max value
+                input.History[(activity, buddyGroup)] = configuration.MaxHistoryGap; // Set to max value
             }
 
         int refEventId = 1102; // The last used event id

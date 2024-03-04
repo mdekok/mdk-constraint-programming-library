@@ -2,11 +2,9 @@
 
 namespace TestConsoleApp.CoProblem;
 
-internal sealed class CoSolver : MdkCpSolver<CoInput, CoVariables, CoResults>
+internal sealed class CoSolver : MdkCpSolver<CoConfiguration, CoInput, CoVariables, CoResults>
 {
-    public CoSolver(CoInput input)
-        : base(input)
-    {
-        this.TimeLimitInSeconds = input.Configuration.TimeLimitInSeconds;
-    }
+    public CoSolver(CoConfiguration configuration, CoInput input)
+        : base(configuration, input)
+    { }
 }

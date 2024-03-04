@@ -5,9 +5,9 @@ using MdkConstraintProgrammingLibrary;
 using TestConsoleApp.CoProblem;
 
 /// <summary>Slots are assigned max once.</summary>
-internal class SlotsAreAssignedMaxOnceConstraint : MdkCpConstraint<CoInput, CoVariables>
+internal class SlotsAreAssignedMaxOnceConstraint : MdkCpConstraint<CoConfiguration, CoInput, CoVariables>
 {
-    public override void Register(CpModel cpModel, CoInput input, CoVariables cpVariables)
+    public override void Register(CpModel cpModel, CoConfiguration configuration, CoInput input, CoVariables cpVariables)
     {
         foreach (CoLocation location in input.Locations)
             foreach (CoActivityGroup activityGroup in location.ActivityGroups)

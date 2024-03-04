@@ -5,11 +5,11 @@ using MdkConstraintProgrammingLibrary;
 using TestConsoleApp.CoProblem;
 
 /// <summary>Pupils are spread over locations and activities.</summary>
-internal sealed class PupilSpreadConstraint : MdkCpConstraint<CoInput, CoVariables>
+internal sealed class PupilSpreadConstraint : MdkCpConstraint<CoConfiguration, CoInput, CoVariables>
 {
-    public override void Register(CpModel cpModel, CoInput input, CoVariables cpVariables)
+    public override void Register(CpModel cpModel, CoConfiguration configuration, CoInput input, CoVariables cpVariables)
     {
-        int maxSpread = input.Configuration.PupilSpread;
+        int maxSpread = configuration.PupilSpread;
 
         // Calculate the number of location with maximum capacity and the total capacity of these locations.
         int maximizedLocationCount = 0;

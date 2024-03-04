@@ -1,7 +1,8 @@
 ﻿ToDo:
-- Parameterizing: enumerate_all_solutions:true linearization_level:2
+- MdkCpInput base class
 - Console logging
 - Input validation
+- MdkConstraintProgramming package
 
 Activities from old database:
 

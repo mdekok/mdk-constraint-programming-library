@@ -4,12 +4,12 @@ using MdkConstraintProgrammingLibrary;
 namespace TestConsoleApp.CoProblem;
 
 /// <summary>Objective class for the CoProblem: maximize the minimal history gap of activities.</summary>
-internal sealed class CoObjective : MdkCpObjective<CoInput, CoVariables>
+internal sealed class CoObjective : MdkCpObjective<CoConfiguration, CoInput, CoVariables>
 {
     /// <inheritdoc />
-    public override void Build(CpModel cpModel, CoInput input, CoVariables cpVariables, double previousObjectiveValue)
+    public override void Build(CpModel cpModel, CoConfiguration configuration, CoInput input, CoVariables cpVariables, double previousObjectiveValue)
     {
-        IntVar objective = cpModel.NewIntVar(0, input.Configuration.MaxHistoryGap, "objective: max minimal history gap");
+        IntVar objective = cpModel.NewIntVar(0, configuration.MaxHistoryGap, "objective: max minimal history gap");
 
         foreach (CoBuddyGroup buddyGroup in input.PlannableBuddyGroups())
         {
@@ -26,7 +26,7 @@ internal sealed class CoObjective : MdkCpObjective<CoInput, CoVariables>
                     }
                 }
 
-            IntVar gapVar = cpModel.NewIntVar(0, input.Configuration.MaxHistoryGap, $"Gap for buddy group {buddyGroup.Id}");
+            IntVar gapVar = cpModel.NewIntVar(0, configuration.MaxHistoryGap, $"Gap for buddy group {buddyGroup.Id}");
             cpModel.Add(gapVar == linearExprBuilder);
             cpModel.Add(gapVar >= objective);
         }

@@ -5,9 +5,9 @@ using MdkConstraintProgrammingLibrary;
 using TestConsoleApp.CoProblem;
 
 /// <summary>The buddy groups do exactly one activity.</summary>
-internal sealed class BuddyGroupsDoExactlyOneActivityConstraint : MdkCpConstraint<CoInput, CoVariables>
+internal sealed class BuddyGroupsDoExactlyOneActivityConstraint : MdkCpConstraint<CoConfiguration, CoInput, CoVariables>
 {
-    public override void Register(CpModel cpModel, CoInput input, CoVariables cpVariables)
+    public override void Register(CpModel cpModel, CoConfiguration configuration, CoInput input, CoVariables cpVariables)
     {
         foreach (CoBuddyGroup buddyGroup in input.PlannableBuddyGroups())
         {

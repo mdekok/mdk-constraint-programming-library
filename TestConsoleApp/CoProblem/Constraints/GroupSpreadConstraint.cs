@@ -5,11 +5,11 @@ using MdkConstraintProgrammingLibrary;
 using TestConsoleApp.CoProblem;
 
 /// <summary>Pupils are spread by group.</summary>
-internal sealed class GroupSpreadConstraint : MdkCpConstraint<CoInput, CoVariables>
+internal sealed class GroupSpreadConstraint : MdkCpConstraint<CoConfiguration, CoInput, CoVariables>
 {
-    public override void Register(CpModel cpModel, CoInput input, CoVariables cpVariables)
+    public override void Register(CpModel cpModel, CoConfiguration configuration, CoInput input, CoVariables cpVariables)
     {
-        int maxSpread = input.Configuration.GroupSpread;
+        int maxSpread = configuration.GroupSpread;
 
         foreach (IGrouping<int, CoPupil> grouping in input.PlannablePupils().GroupBy(pupil => pupil.GroupId))
         {

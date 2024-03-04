@@ -4,9 +4,10 @@ using TestConsoleApp.CoProblem;
 using TestConsoleApp.CoProblem.Constraints;
 using TestConsoleApp.CoProblem.Import;
 
+CoConfiguration configuration = new();
 CoInput input = new();
 
-CoImporter importer = new(input);
+CoImporter importer = new(configuration, input);
 importer.Import();
 
 Console.WriteLine($"{input.PupilCount()} pupils ({input.NeedingAttentionCount()} need attention)");
@@ -14,7 +15,7 @@ Console.WriteLine($"{input.MaleCount()} males");
 Console.WriteLine($"{input.FemaleCount()} females");
 Console.WriteLine($"{input.BuddyGroupCount()} buddy groups");
 
-CoSolver solver = new(input);
+CoSolver solver = new(configuration, input);
 
 solver
     .SetInputValidator<CoInputValidator>()
@@ -93,13 +94,13 @@ Console.WriteLine();
 Console.WriteLine("Dos or Don'ts");
 foreach (CoDoOrDont doOrDont in input.DoOrDonts)
 {
-    Console.WriteLine($"p{doOrDont.Pupil.Id} a{doOrDont.Activity.Id} {doOrDont.MustDo} == {results.PupilDoesActivity(doOrDont.Pupil, doOrDont.Activity)} history gap {input.History[(doOrDont.Activity, doOrDont.Pupil.BuddyGroup)]} ({doOrDont.Pupil.BuddyGroup.Pupils.Count})");
+    Console.WriteLine($"p{doOrDont.Pupil.Id} a{doOrDont.Activity.Id} {doOrDont.MustDo} == {results.PupilDoesActivity(doOrDont.Pupil, doOrDont.Activity)} history gap {input.History[(doOrDont.Activity, doOrDont.Pupil.BuddyGroup)]} ({doOrDont.Pupil.BuddyGroup.Pupils.Count} pupils)");
 }
 
 Console.WriteLine();
 Console.WriteLine($"History gaps distribution:");
 
-int[] HistoryGapCount = new int[input.Configuration.MaxHistoryGap + 1];
+int[] HistoryGapCount = new int[configuration.MaxHistoryGap + 1];
 
 foreach (CoResult result in results.Values)
 {
@@ -107,8 +108,8 @@ foreach (CoResult result in results.Values)
     HistoryGapCount[historyGap]++;
 }
 
-for (int i = 0; i < input.Configuration.MaxHistoryGap; i++)
+for (int i = 0; i < configuration.MaxHistoryGap; i++)
 {
     Console.WriteLine($"History gap {i} count {HistoryGapCount[i]}");
 }
-Console.WriteLine($"Max history gap count {HistoryGapCount[input.Configuration.MaxHistoryGap]}");
+Console.WriteLine($"Max history gap count {HistoryGapCount[configuration.MaxHistoryGap]}");

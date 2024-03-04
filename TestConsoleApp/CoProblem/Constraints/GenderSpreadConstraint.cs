@@ -5,11 +5,11 @@ using MdkConstraintProgrammingLibrary;
 using TestConsoleApp.CoProblem;
 
 /// <summary>Pupils are spread by gender.</summary>
-internal sealed class GenderSpreadConstraint : MdkCpConstraint<CoInput, CoVariables>
+internal sealed class GenderSpreadConstraint : MdkCpConstraint<CoConfiguration, CoInput, CoVariables>
 {
-    public override void Register(CpModel cpModel, CoInput input, CoVariables cpVariables)
+    public override void Register(CpModel cpModel, CoConfiguration configuration, CoInput input, CoVariables cpVariables)
     {
-        int maxSpread = input.Configuration.GenderSpread;
+        int maxSpread = configuration.GenderSpread;
 
         int femaleSurplusPerLocation = (input.FemaleCount() - input.MaleCount()) / input.LocationCount();
         int lowerBound = femaleSurplusPerLocation - maxSpread;

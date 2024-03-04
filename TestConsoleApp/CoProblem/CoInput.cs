@@ -1,36 +1,15 @@
-﻿namespace TestConsoleApp.CoProblem;
+﻿using MdkConstraintProgrammingLibrary;
 
-internal sealed record class CoInput
+namespace TestConsoleApp.CoProblem;
+
+internal sealed class CoInput
 {
-    public CoInputConfiguration Configuration { get; set; } = new CoInputConfiguration();
-
     public List<CoPupil> Pupils { get; set; } = [];
     public List<CoBuddyGroup> BuddyGroups { get; set; } = [];
     public List<CoActivity> Activities { get; set; } = [];
     public List<CoLocation> Locations { get; set; } = [];
     public List<CoDoOrDont> DoOrDonts { get; set; } = [];
     public Dictionary<(CoActivity, CoBuddyGroup), int> History { get; set; } = [];
-}
-
-internal sealed record class CoInputConfiguration
-{
-    /// <summary>Gets or sets the max time in seconds the solver is allowed to take to come to a solution.</summary>
-    public int TimeLimitInSeconds { get; set; } = 120;
-
-    /// <summary>
-    /// Gets or sets the max history gap. Pupils that did not do an activity before get this value as history gap for that activity.
-    /// History gaps are also maximized to this value.
-    /// </summary>
-    public int MaxHistoryGap { get; set; } = 10;
-
-    /// <summary>Gets or sets the pupil spread: max deviation from average pupil count per location.</summary>
-    public int PupilSpread { get; set; } = 2;
-
-    /// <summary>Gets or sets the gender spread: max deviation from average female count per location.</summary>
-    public int GenderSpread { get; set; } = 3;
-
-    /// <summary>Gets or sets the group spread: max deviation from average group count per location.</summary>
-    public int GroupSpread { get; set; } = 3;
 }
 
 internal sealed record class CoPupil(int Id, Gender Gender, int GroupId, bool NeedsAttention, CoBuddyGroup BuddyGroup);

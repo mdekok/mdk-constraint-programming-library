@@ -5,9 +5,9 @@ using MdkConstraintProgrammingLibrary;
 using TestConsoleApp.CoProblem;
 
 /// <summary>Pupils who need attention are spread over activities.</summary>
-internal sealed class PupilNeedingAttentionSpreadConstraint : MdkCpConstraint<CoInput, CoVariables>
+internal sealed class PupilNeedingAttentionSpreadConstraint : MdkCpConstraint<CoConfiguration, CoInput, CoVariables>
 {
-    public override void Register(CpModel cpModel, CoInput input, CoVariables cpVariables)
+    public override void Register(CpModel cpModel, CoConfiguration configuration, CoInput input, CoVariables cpVariables)
     {
         int pupilNeedingAttentionPerLocationAvg = input.NeedingAttentionCount() / input.Locations.Count;
 
